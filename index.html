@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple CRUD Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    input {
+      padding: 5px;
+      margin: 5px;
+    }
+    button {
+      padding: 5px 10px;
+      margin: 5px;
+    }
+    .user-entry {
+      padding: 10px;
+      margin: 10px 0;
+      background-color: #f2f2f2;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>CRUD User Form</h2>
+
+  <form id="userForm">
+    <input type="text" id="id" placeholder="ID" required />
+    <input type="text" id="fname" placeholder="First Name" required />
+    <input type="text" id="lname" placeholder="Last Name" required />
+    <button type="submit">Save</button>
+  </form>
+
+  <h3>All Users:</h3>
+  <div id="userList"></div>
+
+  <script>
+    const form = document.getElementById('userForm');
+    const idField = document.getElementById('id');
+    const fnameField = document.getElementById('fname');
+    const lnameField = document.getElementById('lname');
+    const userList = document.getElementById('userList');
+
+    // Load data on page load
+    window.addEventListener('DOMContentLoaded', displayUsers);
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const id = idField.value.trim();
+      const fname = fnameField.value.trim();
+      const lname = lnameField.value.trim();
+
+      let users = JSON.parse(localStorage.getItem('users')) || [];
+
+      const existingIndex = users.findIndex(user => user.id === id);
+
+      const newUser = { id, fname, lname };
+
+      if (existingIndex !== -1) {
+        // Update existing
+        users[existingIndex] = newUser;
+      } else {
+        // Add new
+        users.push(newUser);
+      }
+
+      localStorage.setItem('users', JSON.stringify(users));
+      form.reset();
+      displayUsers();
+    });
+
+    function displayUsers() {
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      userList.innerHTML = '';
+
+      users.forEach(user => {
+        const div = document.createElement('div');
+        div.className = 'user-entry';
+        div.innerHTML = `
+          <strong>ID:</strong> ${user.id} |
+          <strong>Name:</strong> ${user.fname} ${user.lname}
+          <br>
+          <button onclick="editUser('${user.id}')">Edit</button>
+          <button onclick="deleteUser('${user.id}')">Delete</button>
+        `;
+        userList.appendChild(div);
+      });
+    }
+
+    function editUser(id) {
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const user = users.find(u => u.id === id);
+      if (user) {
+        idField.value = user.id;
+        fnameField.value = user.fname;
+        lnameField.value = user.lname;
+      }
+    }
+
+    function deleteUser(id) {
+      let users = JSON.parse(localStorage.getItem('users')) || [];
+      users = users.filter(user => user.id !== id);
+      localStorage.setItem('users', JSON.stringify(users));
+      displayUsers();
+    }
+  </script>
+
+</body>
+</html>
